@@ -6,6 +6,7 @@ import androidx.core.content.FileProvider;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -40,6 +41,47 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            ImageView img = (ImageView) findViewById(R.id.imageView);
+            // Get the dimensions of the View
+            int targetW = img.getWidth();
+            int targetH = img.getHeight();
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            try {
+                BitmapFactory.decodeFile(getFile().getAbsolutePath(), bmOptions);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+            int scaleFactor = Math.max(1, Math.min(photoW/targetW, photoH/targetH));
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+            bmOptions.inPurgeable = true;
+
+            Bitmap bitmap = null;
+            try {
+                bitmap = BitmapFactory.decodeFile(getFile().getAbsolutePath(), bmOptions);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            img.setImageBitmap(bitmap);
+
+        }
+
+    }
+
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -63,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     }
     protected File getFile() throws IOException{
         File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File imatge = new File(path,"imatge.jpg");
+        File imatge = new File(path,"imatge34.jpg");
         return imatge;
     }
 
